@@ -1,0 +1,1 @@
+Deploy command: func azure functionapp publish longji-research-metadata-processing --python --build remote

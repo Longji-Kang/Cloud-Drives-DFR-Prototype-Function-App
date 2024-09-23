@@ -10,4 +10,4 @@ class ACTION_TYPE(Enum):
 class MODIFICATION_TYPE(Enum):
     CONTENT_MODIFICATION = "content modification"
     RENAME               = "rename modification"
-    REPLACE              = "replace modification"
+    MOVED                = "move modification"

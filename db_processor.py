@@ -3,37 +3,10 @@ from pymongo.collection import Collection
 
 import os
 
-def get_database():
+def get_collection():
     CONN = os.environ["CUSTOMCONNSTR_EvidenceStoreConnectionString"]
 
     client = MongoClient(CONN)
-
-    return client
-
-def create_record(file_id: int, blob_name: str, collection: Collection):
-    data_obj = {
-        "file_id": file_id,
-        "evidence_files": [
-            blob_name
-        ]
-    }
-
-    collection.insert_one(data_obj)
-
-def add_evidence(query_obj: dict, blob_name: str, collection: Collection):
-    update_obj = {
-        "$push": {
-            "evidence_files": blob_name
-        }
-    }
-
-    collection.update_one(
-        query_obj,
-        update_obj
-    )
-
-def update_record(file_id: int, blob_name: str):
-    client = get_database()
 
     DB_NAME         = os.environ["MONGO_DB_NAME"]
     COLLECTION_NAME = os.environ["MONGO_DB_COLLECTION"]
@@ -41,13 +14,91 @@ def update_record(file_id: int, blob_name: str):
     db = client[DB_NAME]
     collection = db[COLLECTION_NAME]
 
-    query_obj = { "file_id": file_id }
+    return collection
 
+def create_record(file_id: int, blob_name: str, file_path: str, path: str, file_name: str, hash: str):
+    collection = get_collection()
+
+    data_obj = {
+        "file_id": file_id,
+        "current_file_path": file_path,
+        "current_directory": path,
+        "current_file_name": file_name,
+        "evidence_files": [
+            blob_name
+        ],
+        "content_hash": hash
+    }
+
+    collection.insert_one(data_obj)
+
+def get_current_path(file_id: int):
+    collection = get_collection()
+
+    query_obj = {
+        "file_id": file_id
+    }
+
+    doc = collection.find_one(query_obj)
+
+    return doc["current_file_path"]
+
+def get_current_file_name(file_id: int):
+    collection = get_collection()
+
+    query_obj = {
+        "file_id": file_id
+    }
+
+    doc = collection.find_one(query_obj)
+
+    return doc["current_file_name"]
+
+def get_current_hash(file_id: int):
+    collection = get_collection()
+
+    query_obj = {
+        "file_id": file_id
+    }
+
+    doc = collection.find_one(query_obj)
+
+    return doc["content_hash"]
+
+def update_record(file_id: int, blob_name: str, file_path: str = None, directory: str = None, file_name: str = None, hash: str = None):
+    collection = get_collection()
+
+    query_obj = {
+        "file_id": file_id
+    }
+
+    update_obj = {
+        "$push": {
+            "evidence_files": blob_name
+        }
+    }
+
+    if file_path != None:
+        update_obj["$set"] = {
+            "current_file_path": file_path
+        }
+
+    if directory != None:
+        update_obj["$set"].update({
+            "current_directory": directory
+        })
     
+    if file_name != None:
+        update_obj["$set"].update({
+            "current_file_name": file_name
+        })
 
-    if collection.count_documents(query_obj) == 0:
-        # No record for file id, create one
-        create_record(file_id, blob_name, collection)
-    else:
-        # Already a record, update it with latest evidence file name
-        add_evidence(query_obj, blob_name, collection)
+    if hash != None:
+        update_obj["$set"].update({
+            "content_hash": hash
+        })
+
+    collection.update_one(
+        query_obj,
+        update_obj
+    )
