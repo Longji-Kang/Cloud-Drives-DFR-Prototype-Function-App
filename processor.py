@@ -4,6 +4,7 @@ from enums import ACTION_TYPE, MODIFICATION_TYPE
 import azure.functions as func
 import db_processor as db
 import get_file_hash as hashint
+import encryption as enc
 
 import json
 import random
@@ -71,6 +72,10 @@ def extract_metadata(req_data: func.HttpRequest, action_type: ACTION_TYPE) -> di
     if action_type == ACTION_TYPE.CREATE:
         hash = hashint.get_hash(metadata["drive_item_id"])
 
+    # Encrypt metadata file
+    content = json.dumps(metadata)
+    encrypted_content = enc.encrypt(content)
+
     # Create a metadata file
     file_name = "".join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(25))
 
@@ -94,7 +99,7 @@ def extract_metadata(req_data: func.HttpRequest, action_type: ACTION_TYPE) -> di
 
         exists = blob.exists()
 
-    blob.upload_blob(json.dumps(metadata).encode("utf-8"))
+    blob.upload_blob(encrypted_content.encode("utf-8"))
 
     return {
         "blob_name": file_name,

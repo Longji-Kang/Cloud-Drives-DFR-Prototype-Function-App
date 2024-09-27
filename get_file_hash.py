@@ -56,3 +56,8 @@ def get_hash(file_id: str) -> str:
     print(hash)
 
     return hash
+
+def hash_string(content: str) -> str:
+    hash_obj = hashlib.md5(content.encode("utf-8"))
+
+    return hash_obj.hexdigest()

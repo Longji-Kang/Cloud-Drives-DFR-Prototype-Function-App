@@ -11,10 +11,9 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 def longji_research_create(req: func.HttpRequest) -> func.HttpResponse:
     info = proc.extract_metadata(req, ACTION_TYPE.CREATE)
 
-    db.create_record(info["file_id"], info["blob_name"], info["file_path"], info["directory"], info["file_name"], info["hash"])
+    # db.create_record(info["file_id"], info["blob_name"], info["file_path"], info["directory"], info["file_name"], info["hash"])
 
     return func.HttpResponse(
-        f'success',
         status_code = 200
     )
 
@@ -23,7 +22,7 @@ def longji_research_create(req: func.HttpRequest) -> func.HttpResponse:
 def longji_research_modified(req: func.HttpRequest) -> func.HttpResponse:
     info = proc.extract_metadata(req, ACTION_TYPE.MODIFY)
 
-    db.update_record(info["file_id"], info["blob_name"], info["file_path"], info["directory"], info["file_name"], info["hash"])
+    # db.update_record(info["file_id"], info["blob_name"], info["file_path"], info["directory"], info["file_name"], info["hash"])
 
     return func.HttpResponse(
         f'success',
@@ -35,7 +34,7 @@ def longji_research_modified(req: func.HttpRequest) -> func.HttpResponse:
 def longji_research_delete(req: func.HttpRequest) -> func.HttpResponse:
     info = proc.process_deleted(req)
 
-    db.update_record(info["file_id"], info["blob_name"], "DELETED", "DELETED", "DELETED", "DELETED")
+    # db.update_record(info["file_id"], info["blob_name"], "DELETED", "DELETED", "DELETED", "DELETED")
 
     return func.HttpResponse(
         f'success',
