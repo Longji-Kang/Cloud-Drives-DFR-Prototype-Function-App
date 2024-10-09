@@ -9,7 +9,7 @@ KEY_VAULT_URI  = f'https://{KEY_VAULT_NAME}.vault.azure.net'
 
 AES_MODE = AES.MODE_EAX
 
-def get_aes_key() -> bytes:
+def get_evidence_aes_key() -> bytes:
     creds = ManagedIdentityCredential(client_id = os.environ['MANAGED_CLIENT_ID'])
 
     client = SecretClient(
@@ -21,9 +21,31 @@ def get_aes_key() -> bytes:
 
     return bytes.fromhex(hex)
 
-def encrypt(content: str):
+def get_db_aes_key() -> bytes:
+    creds = ManagedIdentityCredential(client_id = os.environ['MANAGED_CLIENT_ID']) 
+
+    client = SecretClient(
+        vault_url  = KEY_VAULT_URI,
+        credential = creds
+    )
+
+    hex = client.get_secret(os.environ['DB_SECRET_NAME']).value
+
+    return bytes.fromhex(hex)
+
+def encrypt_evidence(content: str):
+    key = get_evidence_aes_key()
+
+    return encrypt(content, key)
+
+
+def encrypt_file_name(content: str):
+    key = get_db_aes_key()
+
+    return encrypt(content, key)
+
+def encrypt(content: str, key: bytes):
     data_bytes = bytes(content, "utf-8")
-    key        = get_aes_key()
 
     cipher = AES.new(key, AES_MODE)
 
